@@ -5,7 +5,7 @@ pipeline {
         maven 'MAVEN3.9'
     }
 
-    environment {
+      // environment {
       // SNAP_REPO = 'vprofile-snapshot'
       // NEXUS_USER = 'admin'
       // NEXUS_PASS = 'admin123'
@@ -15,7 +15,7 @@ pipeline {
       // NEXUSPORT = '8081'
       // NEXUS_GRP_REPO = 'vpro-maven-group'
       // NEXUS_LOGIN = 'nexuslogin'
-    }
+      // }
 
     stages {
         
