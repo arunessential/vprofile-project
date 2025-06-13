@@ -2,6 +2,7 @@ pipeline {
     
 	agent any
 /*	
+        This is my trial project
 	tools {
         maven "maven3"
     }
