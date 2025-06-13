@@ -3,18 +3,15 @@ pipeline {
     tools {
         jdk 'JDK17' // Ensure 'JDK17' is configured as a global tool in Jenkins
         maven 'MAVEN3.9' // Ensure 'MAVEN3.9' is configured as a global tool in Jenkins
-        sonarscanner 'SONARQUBE_SCANNER_4.7.0.2747' // Ensure 'SONARQUBE_SCANNER_4.7' is configured globally in Jenkins
+        // CORRECTED: Use the full class name for the SonarQube Scanner tool type
+        // 'SONARQUBE_SCANNER_4.7.0.2747' must be the exact name configured in Global Tool Configuration
+        hudson.plugins.sonar.SonarRunnerInstallation 'SONARQUBE_SCANNER_4.7.0.2747' 
     }
 
-    // Define environment variables for SonarQube Scanner configuration here
-    // These variables will be available throughout the pipeline
     environment {
-        // SONARSERVER refers to the name of your SonarQube server configuration in Jenkins
-        // SONARSCANNER refers to the name of your SonarQube Scanner tool definition in Jenkins Global Tool Configuration
-        // It's good to define these at the top level if they are constants
         SONARQUBE_SERVER_NAME = 'sonarserver'
-        SONARQUBE_SCANNER_TOOL = 'SONARQUBE_SCANNER_4.7.0.2747' // This matches the tool name in 'tools' block
-        // No need for scannerHome here, 'withSonarQubeEnv' handles it or you can use the tool name directly.
+        // CORRECTED: The tool name used in 'tool' step and here should match the one defined in 'tools' block
+        SONARQUBE_SCANNER_TOOL = 'SONARQUBE_SCANNER_4.7.0.2747' 
     }
 
     stages {
@@ -44,37 +41,34 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                script { // 'script' block is good for more complex Groovy logic
-                    // 'withSonarQubeEnv' automatically sets SONAR_HOST_URL and SONAR_AUTH_TOKEN
-                    // based on the 'SONARQUBE_SERVER_NAME' credential.
+                script {
                     withSonarQubeEnv("${SONARQUBE_SERVER_NAME}") {
                         // Use the 'tool' step to get the path to the SonarQube scanner executable
+                        // The string passed to tool() must match the name given in Global Tool Configuration
                         def scannerHome = tool "${SONARQUBE_SCANNER_TOOL}"
 
-                        // Execute the SonarQube analysis using the Sonar Scanner CLI.
-                        // For Maven projects, you can often use 'mvn sonar:sonar' directly,
-                        // which is simpler and leverages Maven's existing project structure.
-                        // If you use 'sonar-scanner', you need to provide all project properties manually.
-                        // Let's go with the Maven way first, as it's common for Java projects.
+                        // Using 'mvn sonar:sonar' is generally preferred for Maven projects
                         sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar ' +
-                           '-Dsonar.projectKey=vprofile_project_key ' + // <--- IMPORTANT: Update this to your actual project key
+                           '-Dsonar.projectKey=vprofile_project_key ' + // IMPORTANT: Update this
                            '-Dsonar.projectName=vprofile ' +
                            '-Dsonar.projectVersion=1.0 ' +
-                           '-Dsonar.sources=src/main/java,src/main/resources ' + // Specify main sources
-                           '-Dsonar.java.binaries=target/classes ' + // Specify compiled classes
-                           '-Dsonar.tests=src/test/java ' + // Specify test sources
-                           '-Dsonar.java.test.binaries=target/test-classes ' + // Specify compiled test classes
-                           '-Dsonar.junit.reportsPath=target/surefire-reports ' + // Path to JUnit reports
-                           '-Dsonar.jacoco.reportsPath=target/jacoco.exec' // Path to Jacoco execution report
+                           '-Dsonar.sources=src/main/java,src/main/resources ' +
+                           '-Dsonar.java.binaries=target/classes ' +
+                           '-Dsonar.tests=src/test/java ' +
+                           '-Dsonar.java.test.binaries=target/test-classes ' +
+                           '-Dsonar.junit.reportsPath=target/surefire-reports ' +
+                           '-Dsonar.jacoco.reportsPath=target/jacoco.exec'
                         
                         // If you *must* use the sonar-scanner CLI directly:
                         /*
+                        // Ensure your sonar-scanner properties are correctly set for CLI usage
+                        // and that paths are absolute or relative to the workspace root.
                         sh "${scannerHome}/bin/sonar-scanner " +
-                           "-Dsonar.projectKey=vprofile_project_key " + // <--- IMPORTANT: Update this to your actual project key
+                           "-Dsonar.projectKey=vprofile_project_key " +
                            "-Dsonar.projectName=vprofile " +
                            "-Dsonar.projectVersion=1.0 " +
                            "-Dsonar.sources=src/ " +
-                           "-Dsonar.java.binaries=target/classes " + // Adjust path as needed
+                           "-Dsonar.java.binaries=target/classes " +
                            "-Dsonar.junit.reportsPath=target/surefire-reports/ " +
                            "-Dsonar.jacoco.reportsPath=target/jacoco.exec " +
                            "-Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml"
@@ -86,10 +80,9 @@ pipeline {
                 always {
                     script {
                         echo "Waiting for SonarQube analysis to complete and Quality Gate status..."
-                        // Give SonarQube server some time to process the analysis report
-                        sleep 60 // Increased sleep time, adjust based on project size/server load
+                        sleep 60 
                         try {
-                            def qg = waitForQualityGate() // Requires SonarQube Quality Gates plugin
+                            def qg = waitForQualityGate()
                             if (qg.status != 'OK') {
                                 error "Pipeline aborted due to Quality Gate failure: ${qg.status}"
                             } else {
@@ -97,12 +90,10 @@ pipeline {
                             }
                         } catch (Exception e) {
                             echo "Error checking Quality Gate: ${e.message}. Proceeding anyway."
-                            // You might want to 'error' here if Quality Gate check is mandatory.
-                            // For now, it will just log the error and continue.
                         }
                     }
                 }
             }
         }
-    } // Closes the 'stages' block correctly
-} // Closes the 'pipeline' block correctly
+    }
+}
