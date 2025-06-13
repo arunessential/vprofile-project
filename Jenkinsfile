@@ -1,11 +1,11 @@
 pipeline {
     agent any
+    
     tools {
         jdk 'JDK17' // Ensure 'JDK17' is configured as a global tool in Jenkins
         maven 'MAVEN3.9' // Ensure 'MAVEN3.9' is configured as a global tool in Jenkins
         // CORRECTED: Use the full class name for the SonarQube Scanner tool type
-        // 'SONARQUBE_SCANNER_4.7.0.2747' must be the exact name configured in Global Tool Configuration
-        hudson.plugins.sonar.SonarRunnerInstallation 'SONARQUBE_SCANNER_4.7.0.2747' 
+        // 'SONARQUBE_SCANNER_4.7.0.2747' must be the exact name configured in Global Tool Configuration 
     }
 
     environment {
