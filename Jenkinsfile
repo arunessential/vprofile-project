@@ -3,7 +3,7 @@ pipeline {
     tools {
         jdk 'JDK17' // Ensure 'JDK17' is configured as a global tool in Jenkins
         maven 'MAVEN3.9' // Ensure 'MAVEN3.9' is configured as a global tool in Jenkins
-        sonarscanner 'SONARQUBE_SCANNER_4.7' // Ensure 'SONARQUBE_SCANNER_4.7' is configured globally in Jenkins
+        sonarscanner 'SONARQUBE_SCANNER_4.7.0.2747' // Ensure 'SONARQUBE_SCANNER_4.7' is configured globally in Jenkins
     }
 
     // Define environment variables for SonarQube Scanner configuration here
@@ -13,7 +13,7 @@ pipeline {
         // SONARSCANNER refers to the name of your SonarQube Scanner tool definition in Jenkins Global Tool Configuration
         // It's good to define these at the top level if they are constants
         SONARQUBE_SERVER_NAME = 'sonarserver'
-        SONARQUBE_SCANNER_TOOL = 'SONARQUBE_SCANNER_4.7' // This matches the tool name in 'tools' block
+        SONARQUBE_SCANNER_TOOL = 'SONARQUBE_SCANNER_4.7.0.2747' // This matches the tool name in 'tools' block
         // No need for scannerHome here, 'withSonarQubeEnv' handles it or you can use the tool name directly.
     }
 
