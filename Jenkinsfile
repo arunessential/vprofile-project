@@ -42,7 +42,8 @@ pipeline {
             }
         }
     }
-}// pipeline {
+}
+// pipeline {
 //     agent any
 //     tools {
 //         jdk 'JDK17'
