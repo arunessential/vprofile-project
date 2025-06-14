@@ -58,5 +58,7 @@ pipeline {
                          type: 'war']
                         ]
                 )
+            }
+        }   
     }
 }
