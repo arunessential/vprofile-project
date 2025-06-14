@@ -9,9 +9,8 @@ pipeline {
     }
 
     environment {
-        SONARQUBE_SERVER_NAME = 'sonarserver'
-        // CORRECTED: The tool name used in 'tool' step and here should match the one defined in 'tools' block
-        SONARQUBE_SCANNER_TOOL = 'SONARQUBE_SCANNER_4.7.0.2747' 
+        SONARSERVER = 'sonarserver'
+        SONARSCANNER = 'sonarscanner'
     }
 
     stages {
