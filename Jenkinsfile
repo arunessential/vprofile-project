@@ -8,6 +8,13 @@ pipeline {
 
     environment {
         // Define your SonarQube server name as configured in Jenkins > Manage Jenkins > Configure System > SonarQube servers
+        NEXUS_USER = 'admin'
+        NEXUS_PASS = 'admin123'
+        NEXUSIP = '172.31.94.8'
+        NEXUSPORT = '8081'
+        RELEASE_REPO = 'vprofile-release'
+        // NEXUS_GRP_REPO = 'vpro-maven-group'
+        NEXUS_LOGIN = 'nexuslogin'
         SONARQUBE_SERVER_NAME = 'sonarserver'  // Replace with actual configured name
     }
 
@@ -34,5 +41,22 @@ pipeline {
                 }
             }
         }
+        stage("UploadArtifact"){
+            steps{
+                nexusArtifactUploader(
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    nexusUrl: "${NEXUSIP}:${NEXUSPORT}",
+                    groupId: 'QA',
+                    version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}",
+                    repository: "${RELEASE_REPO}",
+                    credentialsId: ${NEXUS_LOGIN},
+                    artifacts: [
+                        [artifactId: 'vproapp',
+                         classifier: '',
+                         file: 'target/vprofile-v2.war',
+                         type: 'war']
+                        ]
+                )
     }
 }
