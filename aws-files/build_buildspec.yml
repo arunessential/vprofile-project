@@ -5,19 +5,46 @@ phases:
     runtime-versions:
       java: corretto17
     commands:
-      - cp ./settings.xml /root/.m2/settings.xml
+      # Get the CodeArtifact auth token and export it
+      - echo "Getting CodeArtifact token..."
       - export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain arunaws --domain-owner 047719654980 --region us-east-1 --query authorizationToken --output text)
+
+      # Create .m2 directory if it doesn't exist
+      - mkdir -p /root/.m2
+
+      # Dynamically generate the Maven settings.xml with the token
+      - echo "Creating settings.xml..."
+      - |
+        cat > /root/.m2/settings.xml <<EOF
+        <settings>
+          <servers>
+            <server>
+              <id>codeartifact</id>
+              <username>aws</username>
+              <password>${CODEARTIFACT_AUTH_TOKEN}</password>
+            </server>
+          </servers>
+          <mirrors>
+            <mirror>
+              <id>codeartifact</id>
+              <name>CodeArtifact</name>
+              <url>https://arunaws-047719654980.d.codeartifact.us-east-1.amazonaws.com/maven/Vpro-maven-repos/</url>
+              <mirrorOf>*</mirrorOf>
+            </mirror>
+          </mirrors>
+        </settings>
+        EOF
 
   pre_build:
     commands:
+      - echo "Installing tools..."
       - apt-get update
       - apt-get install -y jq
-      - echo "Maven version:"
-      - mvn -version  # Check the preinstalled Maven version
 
   build:
     commands:
-      - mvn clean install -DskipTests
+      - echo "Building the application..."
+      - mvn clean install -DskipTests -X  # '-X' for debug logging in case of issues
 
 artifacts:
   files:
