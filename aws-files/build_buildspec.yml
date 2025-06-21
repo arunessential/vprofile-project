@@ -29,7 +29,7 @@ phases:
               <id>codeartifact</id>
               <name>CodeArtifact</name>
               <url>https://arunaws-047719654980.d.codeartifact.us-east-1.amazonaws.com/maven/Vpro-maven-repos/</url>
-              <mirrorOf>*</mirrorOf>
+              <mirrorOf>!central</mirrorOf>
             </mirror>
           </mirrors>
         </settings>
