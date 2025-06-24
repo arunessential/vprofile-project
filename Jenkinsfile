@@ -7,15 +7,13 @@ pipeline {
     }
 
     environment {
-        // Define your SonarQube server name as configured in Jenkins > Manage Jenkins > Configure System > SonarQube servers
         NEXUS_USER = 'admin'
         NEXUS_PASS = 'admin123'
         NEXUSIP = '172.31.94.8'
         NEXUSPORT = '8081'
         RELEASE_REPO = 'vprofile-release'
-        // NEXUS_GRP_REPO = 'vpro-maven-group'
         NEXUS_LOGIN = 'nexuslogin'
-        SONARQUBE_SERVER_NAME = 'sonarqube-9'  // Replace with actual configured name
+        SONARQUBE_SERVER_NAME = 'sonarqube-9'  // Must match Jenkins config
     }
 
     stages {
@@ -34,21 +32,24 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_SERVER_NAME}") {
-                    sh 'mvn sonar:sonar'
+                    // ✅ Inject sonar.login token securely from Jenkins credentials
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                        sh 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
+                    }
                 }
             }
         }
 
         stage("Quality Gate") {
             steps {
-                // Optional sleep to give SonarQube time to analyze
                 timeout(time: 1, unit: 'HOURS') {
-                waitForQualityGate abortPipeline: true
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
-        stage("UploadArtifact"){
-            steps{
+
+        stage("UploadArtifact") {
+            steps {
                 nexusArtifactUploader(
                     nexusVersion: 'nexus3',
                     protocol: 'http',
@@ -58,13 +59,15 @@ pipeline {
                     repository: "${RELEASE_REPO}",
                     credentialsId: "${NEXUS_LOGIN}",
                     artifacts: [
-                        [artifactId: 'vproapp',
-                         classifier: '',
-                         file: 'target/vprofile-v2.war',
-                         type: 'war']
+                        [
+                            artifactId: 'vproapp',
+                            classifier: '',
+                            file: 'target/vprofile-v2.war',
+                            type: 'war'
                         ]
+                    ]
                 )
             }
-        }   
+        }
     }
 }
