@@ -15,7 +15,7 @@ pipeline {
         RELEASE_REPO = 'vprofile-release'
         // NEXUS_GRP_REPO = 'vpro-maven-group'
         NEXUS_LOGIN = 'nexuslogin'
-        SONARQUBE_SERVER_NAME = 'sonarserver'  // Replace with actual configured name
+        SONARQUBE_SERVER_NAME = 'sonarqube-9'  // Replace with actual configured name
     }
 
     stages {
